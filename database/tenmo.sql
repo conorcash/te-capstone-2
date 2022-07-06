@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS tenmo_user, account;
+DROP TABLE IF EXISTS tenmo_user, account, transaction;
 
 DROP SEQUENCE IF EXISTS seq_user_id, seq_account_id;
 
@@ -33,5 +33,24 @@ CREATE TABLE account (
 	CONSTRAINT FK_account_tenmo_user FOREIGN KEY (user_id) REFERENCES tenmo_user (user_id)
 );
 
+CREATE TABLE transaction (
+	transaction_id serial,
+	sender_id int NOT NULL,
+	recipient_id int NOT NULL CHECK(sender_id != recipient_id),
+	amount decimal(13,2) CHECK(amount > 0.00),
+	status varchar(10) CHECK(status = 'Approved' OR status = 'Rejected' OR status = 'Pending'),
+	CONSTRAINT FK_sender_id FOREIGN KEY (sender_id) REFERENCES account(account_id),
+	CONSTRAINT FK_recipient_id FOREIGN KEY (recipient_id) REFERENCES account(account_id)	
+);
+
 
 COMMIT;
+
+-- INSERT INTO account
+-- (account_id,user_id,)
+
+-- INSERT INTO transaction
+-- (sender_id, recipient_id, amount, status)
+-- VALUES (1,2,54,'Rejected');
+
+-- SELECT * FROM transaction;
