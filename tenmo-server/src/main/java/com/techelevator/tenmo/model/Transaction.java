@@ -8,6 +8,7 @@ public class Transaction {
     private int transactionId;
     private int senderId;
     private int recipientId;
+    private int creatorId;
     private BigDecimal amount;
     private enum Status {PENDING,APPROVED,REJECTED};
     private Status status = Status.PENDING;
@@ -25,6 +26,10 @@ public class Transaction {
 
     public int getRecipientId() {
         return recipientId;
+    }
+
+    public int getCreatorId() {
+        return creatorId;
     }
 
     public BigDecimal getAmount() {
