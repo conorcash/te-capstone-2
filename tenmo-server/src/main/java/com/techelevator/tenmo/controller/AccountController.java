@@ -36,8 +36,8 @@ public class AccountController {
         return accountDao.create(account);
     }
 
-    @RequestMapping(path = "/trasactions/{id}", method = RequestMethod.PUT)
-    public BigDecimal updateBalanceWithdraw(@RequestBody Account account) {
-        return accountDao.withdraw()
-    }
+//    @RequestMapping(path = "/transactions/{id}", method = RequestMethod.POST)
+//    public (@RequestBody Account account) {
+//        return accountDao.withdraw()
+//    }
 }

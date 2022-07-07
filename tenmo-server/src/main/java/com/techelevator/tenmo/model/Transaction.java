@@ -1,6 +1,5 @@
 package com.techelevator.tenmo.model;
 
-import com.techelevator.tenmo.Exceptions.InvalidAmount;
 
 import java.math.BigDecimal;
 
@@ -8,13 +7,20 @@ public class Transaction {
     private int transactionId;
     private int senderId;
     private int recipientId;
-    private int creatorId;
+    private boolean isRequest;
     private BigDecimal amount;
-    private enum Status {PENDING,APPROVED,REJECTED};
-    private Status status = Status.PENDING;
+    private String status;
 
-    Account sender = new Account(senderId);
-    Account recipient = new Account(recipientId);
+    public Transaction () {
+
+    }
+
+    public Transaction (int senderId, int recipientId, BigDecimal amount, boolean isRequest) {
+        this.senderId = senderId;
+        this.recipientId = recipientId;
+        this.amount = amount;
+        this.isRequest = isRequest;
+    }
 
     public int getTransactionId() {
         return transactionId;
@@ -28,15 +34,15 @@ public class Transaction {
         return recipientId;
     }
 
-    public int getCreatorId() {
-        return creatorId;
+    public boolean isRequest() {
+        return isRequest;
     }
 
     public BigDecimal getAmount() {
         return amount;
     }
 
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
@@ -48,18 +54,31 @@ public class Transaction {
         this.recipientId = recipientId;
     }
 
-    public void setAmount(BigDecimal amount) throws InvalidAmount {
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidAmount();
-        }
+    public void setIsRequest(boolean isRequest) {
+        this.isRequest = isRequest;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setTransactionId(int transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public void setAmount(BigDecimal amount) {
+//        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+//            throw new InvalidAmount();
+//        }
         this.amount = amount;
     }
 
-    public void approve () {
-        status = Status.APPROVED;
-    }
+//    public void approve () {
+//        status = "Approved";
+//    }
+//
+//    public void reject () {
+//        status = "Rejected";
+//    }
 
-    public void reject () {
-        status = Status.REJECTED;
-    }
 }

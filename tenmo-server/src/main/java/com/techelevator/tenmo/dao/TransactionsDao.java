@@ -12,10 +12,7 @@ public interface TransactionsDao {
 
     Transaction findTransactionById(int id);
 
-    void acceptTransaction();
+    void accept();
 
-    void rejectTransaction();
-
-    int requestTransaction();
-
+    void reject();
 }
