@@ -1,5 +1,7 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.Exceptions.InvalidEntry;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,9 +18,11 @@ import java.util.List;
 public class JdbcUserDao implements UserDao {
 
     private JdbcTemplate jdbcTemplate;
+    private AccountDao accountDao;
 
-    public JdbcUserDao(JdbcTemplate jdbcTemplate) {
+    public JdbcUserDao(JdbcTemplate jdbcTemplate,AccountDao accountDao) {
         this.jdbcTemplate = jdbcTemplate;
+        this.accountDao = accountDao;
     }
 
     @Override
@@ -55,7 +59,7 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public boolean create(String username, String password) {
+    public boolean create(String username, String password) throws InvalidEntry {
 
         // create user
         String sql = "INSERT INTO tenmo_user (username, password_hash) VALUES (?, ?) RETURNING user_id";
@@ -66,6 +70,9 @@ public class JdbcUserDao implements UserDao {
         } catch (DataAccessException e) {
             return false;
         }
+
+        Account account = new Account(newUserId);
+        accountDao.create(account);
 
         // TODO: Create the account record with initial balance
 

@@ -7,11 +7,13 @@ import com.techelevator.tenmo.model.Account;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class JdbcAccountDao implements AccountDao {
 
     private final JdbcTemplate jdbcTemplate;
@@ -45,12 +47,11 @@ public class JdbcAccountDao implements AccountDao {
     }
 
     @Override
-    public int create(Account account) throws DataAccessException {
+    public void create(Account account) throws DataAccessException {
         String sql = "INSERT INTO account " +
                 "(user_id,balance) " +
-                "VALUES(?,?) " +
-                "RETURNING account_id;";
-        return jdbcTemplate.update(sql, account.getUserId(), account.getBalance());
+                "VALUES(?,?);";
+        jdbcTemplate.update(sql, account.getUserId(), account.getBalance());
     }
 
     @Override
@@ -68,6 +69,16 @@ public class JdbcAccountDao implements AccountDao {
     public Account findByAccountId(int id) throws AccountNotFound {
         String sql = "SELECT account_id, user_id, balance FROM account WHERE account_id = ?;";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
+        if (rowSet.next()){
+            return mapRowToAccount(rowSet);
+        }
+        throw new AccountNotFound();
+    }
+
+    @Override
+    public Account findByUserId(int userId) throws AccountNotFound {
+        String sql = "SELECT account_id, user_id, balance FROM account WHERE user_id = ?;";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, userId);
         if (rowSet.next()){
             return mapRowToAccount(rowSet);
         }

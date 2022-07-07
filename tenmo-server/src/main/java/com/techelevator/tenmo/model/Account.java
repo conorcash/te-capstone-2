@@ -1,8 +1,5 @@
 package com.techelevator.tenmo.model;
 
-import com.techelevator.tenmo.Exceptions.InsufficientBalance;
-import com.techelevator.tenmo.Exceptions.InvalidAmount;
-
 import java.math.BigDecimal;
 
 public class Account {

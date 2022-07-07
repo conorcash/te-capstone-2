@@ -15,9 +15,11 @@ public interface AccountDao {
 
     BigDecimal deposit(BigDecimal amount, int accountId);
 
-    int create(Account account) throws InvalidEntry;
+    void create(Account account) throws InvalidEntry;
 
     List<Account> listAccounts();
 
     Account findByAccountId (int id) throws AccountNotFound;
+
+    Account findByUserId (int userId) throws AccountNotFound;
 }

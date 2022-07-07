@@ -5,16 +5,25 @@ import com.techelevator.tenmo.Exceptions.InsufficientBalance;
 import com.techelevator.tenmo.Exceptions.InvalidAmount;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transaction;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class JdbcTransactionDao implements TransactionsDao {
 
-    JdbcTemplate jdbcTemplate = new JdbcTemplate();
-    AccountDao accountDao = new JdbcAccountDao(jdbcTemplate);
+    private JdbcTemplate jdbcTemplate;
+    private AccountDao accountDao;
+
+    public JdbcTransactionDao(JdbcTemplate jdbcTemplate,AccountDao accountDao) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.accountDao = accountDao;
+    }
 
     @Override
     public List<Transaction> listTransactions() {
@@ -42,7 +51,7 @@ public class JdbcTransactionDao implements TransactionsDao {
     }
 
     @Override
-    public int create(Transaction transaction, int creatorId) throws
+    public Transaction create(Transaction transaction, int creatorId) throws
             InsufficientBalance, InvalidAmount, AccountNotFound {
         transaction.setIsRequest(creatorId == transaction.getRecipientId());
         Account sender = accountDao.findByAccountId(transaction.getSenderId());
@@ -60,17 +69,24 @@ public class JdbcTransactionDao implements TransactionsDao {
                 "(sender_id,recipient_id,amount,status,is_request) " +
                 "VALUES (?,?,?,?,?) " +
                 "RETURNING transaction_id;";
-        return jdbcTemplate.update(sql,transaction.getSenderId(),transaction.getRecipientId(),
+        int transactionId = jdbcTemplate.queryForObject(sql,int.class,transaction.getSenderId(),transaction.getRecipientId(),
                 transaction.getAmount(),transaction.getStatus(),transaction.isRequest());
+
+        transaction.setTransactionId(transactionId);
+        return transaction;
     }
 
     @Override
-    public Transaction findTransactionById(int id) {
-        String sql = "SELECT transaction_id,sender_id,recipient_id,amount,status " +
+    public Transaction findTransactionById(int transactionId) {
+        String sql = "SELECT transaction_id,sender_id,recipient_id,amount,status,is_request " +
                 "FROM transaction " +
-                "WHERE transaction_id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql,id);
-        return mapRowToTransaction(rowSet);
+                "WHERE transaction_id = ?;";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql,transactionId);
+        if (rowSet.next()) {
+            return mapRowToTransaction(rowSet);
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -95,7 +111,8 @@ public class JdbcTransactionDao implements TransactionsDao {
         transaction.setSenderId(rowSet.getInt("sender_id"));
         transaction.setRecipientId(rowSet.getInt("recipient_id"));
         transaction.setAmount(rowSet.getBigDecimal("amount"));
-        transaction.setStatus(rowSet.getObject("status",String.class));
+        transaction.setStatus(rowSet.getString("status"));
+        transaction.setIsRequest(rowSet.getBoolean("is_request"));
         return transaction;
     }
 }
