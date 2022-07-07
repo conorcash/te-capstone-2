@@ -1,5 +1,9 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.Exceptions.AccountNotFound;
+import com.techelevator.tenmo.Exceptions.InsufficientBalance;
+import com.techelevator.tenmo.Exceptions.InvalidAmount;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transaction;
 
 import java.util.List;
@@ -8,11 +12,13 @@ public interface TransactionsDao {
 
     List<Transaction> listTransactions();
 
-    int create(Transaction transaction);
+    List<Transaction> listAccountTransactions(int accountId);
+
+    int create(Transaction transaction, int creatorId) throws InsufficientBalance, InvalidAmount, AccountNotFound;
 
     Transaction findTransactionById(int id);
 
-    void accept();
+    void accept(int transactionId) throws InsufficientBalance, AccountNotFound, InvalidAmount;
 
-    void reject();
+    void reject(int transactionId);
 }

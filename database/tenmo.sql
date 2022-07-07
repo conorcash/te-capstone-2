@@ -39,6 +39,7 @@ CREATE TABLE transaction (
 	recipient_id int NOT NULL CHECK(sender_id != recipient_id),
 	amount decimal(13,2) CHECK(amount > 0.00),
 	status varchar(10) CHECK(status = 'Approved' OR status = 'Rejected' OR status = 'Pending'),
+	is_request boolean NOT NULL,
 	CONSTRAINT FK_sender_id FOREIGN KEY (sender_id) REFERENCES account(account_id),
 	CONSTRAINT FK_recipient_id FOREIGN KEY (recipient_id) REFERENCES account(account_id)	
 );
