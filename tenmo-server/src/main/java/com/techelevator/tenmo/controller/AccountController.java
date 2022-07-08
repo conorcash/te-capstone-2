@@ -32,8 +32,11 @@ public class AccountController {
     }
 
     @RequestMapping(path = "accounts/{id}", method = RequestMethod.GET)
-    public Account listAccountById(@PathVariable("id") int accountId) throws AccountNotFound {
-        return accountDao.findByAccountId(accountId);
+    public Account listAccountById(@PathVariable("id") int accountId, Principal principal) throws AccountNotFound, InvalidEntry{
+        if (accountDao.findByUserId(userDao.findIdByUsername(principal.getName())).getAccountId() == accountId) {
+            return accountDao.findByAccountId(accountId);
+        }
+        throw new InvalidEntry();
     }
 
     @RequestMapping(path = "/accounts/{id}/balance", method = RequestMethod.GET)
@@ -44,5 +47,4 @@ public class AccountController {
         }
         throw new InvalidEntry();
     }
-
 }

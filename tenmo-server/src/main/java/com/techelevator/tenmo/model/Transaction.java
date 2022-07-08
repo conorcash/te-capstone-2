@@ -1,11 +1,14 @@
 package com.techelevator.tenmo.model;
 
 
+import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 
 public class Transaction {
     private int transactionId;
+    @NotBlank
     private int senderId;
+    @NotBlank
     private int recipientId;
     private boolean isRequest;
     private BigDecimal amount;

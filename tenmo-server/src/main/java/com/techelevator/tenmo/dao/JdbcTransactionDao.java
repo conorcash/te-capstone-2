@@ -3,6 +3,7 @@ package com.techelevator.tenmo.dao;
 import com.techelevator.tenmo.Exceptions.AccountNotFound;
 import com.techelevator.tenmo.Exceptions.InsufficientBalance;
 import com.techelevator.tenmo.Exceptions.InvalidAmount;
+import com.techelevator.tenmo.Exceptions.InvalidEntry;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transaction;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class JdbcTransactionDao implements TransactionsDao {
     @Override
     public List<Transaction> listAccountTransactions (int accountId) {
         List<Transaction> accountTransactions = new ArrayList<>();
-        String sql = "SELECT transaction_id,sender_id,recipient_id,amount,status " +
+        String sql = "SELECT transaction_id,sender_id,recipient_id,amount,status,is_request " +
                 "FROM transaction " +
                 "WHERE sender_id = ? OR recipient_id = ?;";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql,accountId,accountId);
@@ -52,7 +53,10 @@ public class JdbcTransactionDao implements TransactionsDao {
 
     @Override
     public Transaction create(Transaction transaction, int creatorId) throws
-            InsufficientBalance, InvalidAmount, AccountNotFound {
+            InsufficientBalance, InvalidAmount, AccountNotFound, InvalidEntry {
+        if (transaction.getSenderId() == transaction.getRecipientId()) {
+            throw new InvalidEntry();
+        }
         transaction.setIsRequest(creatorId == transaction.getRecipientId());
         Account sender = accountDao.findByAccountId(transaction.getSenderId());
         Account recipient = accountDao.findByAccountId(transaction.getRecipientId());
@@ -103,6 +107,12 @@ public class JdbcTransactionDao implements TransactionsDao {
 
     @Override
     public void reject(int transactionId) {
+        Transaction transaction = findTransactionById(transactionId);
+        transaction.setStatus("Rejected");
+        String sql = "UPDATE transaction " +
+                "SET status = ? " +
+                "WHERE transaction_id = ? ";
+        jdbcTemplate.update(sql,transaction.getStatus(),transaction.getTransactionId());
     }
 
     private Transaction mapRowToTransaction (SqlRowSet rowSet) {
