@@ -18,7 +18,7 @@ public interface TransactionsDao {
 
     Transaction findTransactionById(int id);
 
-    void accept(int transactionId) throws InsufficientBalance, AccountNotFound, InvalidAmount;
+    Transaction accept(int transactionId) throws InsufficientBalance, AccountNotFound, InvalidAmount;
 
-    void reject(int transactionId);
+    Transaction reject(int transactionId);
 }

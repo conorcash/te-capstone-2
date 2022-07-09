@@ -4,7 +4,6 @@ import com.techelevator.tenmo.Exceptions.AccountNotFound;
 import com.techelevator.tenmo.Exceptions.InsufficientBalance;
 import com.techelevator.tenmo.Exceptions.InvalidAmount;
 import com.techelevator.tenmo.Exceptions.InvalidEntry;
-import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,11 +18,9 @@ import java.util.List;
 public class JdbcTransactionDao implements TransactionsDao {
 
     private JdbcTemplate jdbcTemplate;
-    private AccountDao accountDao;
 
-    public JdbcTransactionDao(JdbcTemplate jdbcTemplate,AccountDao accountDao) {
+    public JdbcTransactionDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.accountDao = accountDao;
     }
 
     @Override
@@ -54,21 +51,6 @@ public class JdbcTransactionDao implements TransactionsDao {
     @Override
     public Transaction create(Transaction transaction, int creatorId) throws
             InsufficientBalance, InvalidAmount, AccountNotFound, InvalidEntry {
-        if (transaction.getSenderId() == transaction.getRecipientId()) {
-            throw new InvalidEntry();
-        }
-        transaction.setIsRequest(creatorId == transaction.getRecipientId());
-        Account sender = accountDao.findByAccountId(transaction.getSenderId());
-        Account recipient = accountDao.findByAccountId(transaction.getRecipientId());
-        if (transaction.isRequest()) {
-            transaction.setStatus("Pending");
-        } else if (transaction.getAmount().compareTo(sender.getBalance()) > 0) {
-            throw new InsufficientBalance();
-        } else {
-            transaction.setStatus("Approved");
-            accountDao.withdraw(transaction.getAmount(),sender.getAccountId());
-            accountDao.deposit(transaction.getAmount(),recipient.getAccountId());
-        }
         String sql = "INSERT INTO transaction " +
                 "(sender_id,recipient_id,amount,status,is_request) " +
                 "VALUES (?,?,?,?,?) " +
@@ -94,25 +76,25 @@ public class JdbcTransactionDao implements TransactionsDao {
     }
 
     @Override
-    public void accept(int transactionId) throws InsufficientBalance, AccountNotFound, InvalidAmount {
+    public Transaction accept(int transactionId) throws InsufficientBalance, AccountNotFound, InvalidAmount {
         Transaction transaction = findTransactionById(transactionId);
         transaction.setStatus("Approved");
         String sql = "UPDATE transaction " +
                 "SET status = ? " +
                 "WHERE transaction_id = ? ";
         jdbcTemplate.update(sql,transaction.getStatus(),transaction.getTransactionId());
-        accountDao.deposit(transaction.getAmount(),transaction.getRecipientId());
-        accountDao.withdraw(transaction.getAmount(),transaction.getSenderId());
+        return transaction;
     }
 
     @Override
-    public void reject(int transactionId) {
+    public Transaction reject(int transactionId) {
         Transaction transaction = findTransactionById(transactionId);
         transaction.setStatus("Rejected");
         String sql = "UPDATE transaction " +
                 "SET status = ? " +
                 "WHERE transaction_id = ? ";
         jdbcTemplate.update(sql,transaction.getStatus(),transaction.getTransactionId());
+        return transaction;
     }
 
     private Transaction mapRowToTransaction (SqlRowSet rowSet) {

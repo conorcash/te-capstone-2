@@ -70,18 +70,6 @@ public class Transaction {
     }
 
     public void setAmount(BigDecimal amount) {
-//        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-//            throw new InvalidAmount();
-//        }
         this.amount = amount;
     }
-
-//    public void approve () {
-//        status = "Approved";
-//    }
-//
-//    public void reject () {
-//        status = "Rejected";
-//    }
-
 }

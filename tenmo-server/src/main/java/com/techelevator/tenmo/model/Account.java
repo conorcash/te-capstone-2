@@ -6,15 +6,13 @@ public class Account {
     private int accountId;
     private int userId;
     private BigDecimal balance;
-    private final BigDecimal DEFAULT_BALANCE = BigDecimal.valueOf(1000);
 
-    public Account () {
-
+    public Account() {
     }
 
-    public Account(int userId) {
+    public Account(int userId,BigDecimal beginningBalance) {
         this.userId = userId;
-        this.balance = DEFAULT_BALANCE;
+        this.balance = beginningBalance;
     }
 
     public int getAccountId() {

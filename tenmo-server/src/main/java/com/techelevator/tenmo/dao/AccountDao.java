@@ -22,4 +22,6 @@ public interface AccountDao {
     Account findByAccountId (int id) throws AccountNotFound;
 
     Account findByUserId (int userId) throws AccountNotFound;
+
+    Account findByUsername(String username) throws AccountNotFound;
 }

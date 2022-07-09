@@ -20,7 +20,7 @@ public class JdbcUserDao implements UserDao {
     private JdbcTemplate jdbcTemplate;
     private AccountDao accountDao;
 
-    public JdbcUserDao(JdbcTemplate jdbcTemplate,AccountDao accountDao) {
+    public JdbcUserDao(JdbcTemplate jdbcTemplate, AccountDao accountDao) {
         this.jdbcTemplate = jdbcTemplate;
         this.accountDao = accountDao;
     }
@@ -58,6 +58,8 @@ public class JdbcUserDao implements UserDao {
         throw new UsernameNotFoundException("User " + username + " was not found.");
     }
 
+
+
     @Override
     public boolean create(String username, String password) throws InvalidEntry {
 
@@ -70,9 +72,6 @@ public class JdbcUserDao implements UserDao {
         } catch (DataAccessException e) {
             return false;
         }
-
-        Account account = new Account(newUserId);
-        accountDao.create(account);
 
         // TODO: Create the account record with initial balance
 

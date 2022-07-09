@@ -10,6 +10,7 @@ public class User {
    private String username;
    private String password;
    private boolean activated;
+   private int accountId;
    private Set<Authority> authorities = new HashSet<>();
 
    public User() { }
@@ -51,6 +52,14 @@ public class User {
 
    public void setActivated(boolean activated) {
       this.activated = activated;
+   }
+
+   public int getAccountId() {
+      return accountId;
+   }
+
+   public void setAccountId(int accountId) {
+      this.accountId = accountId;
    }
 
    public Set<Authority> getAuthorities() {

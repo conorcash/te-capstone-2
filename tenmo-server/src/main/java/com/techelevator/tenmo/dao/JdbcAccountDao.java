@@ -85,10 +85,22 @@ public class JdbcAccountDao implements AccountDao {
         throw new AccountNotFound();
     }
 
+    @Override
+    public Account findByUsername(String username) throws AccountNotFound {
+        String sql = "SELECT a.account_id, a.user_id, a.balance FROM account AS a " +
+                "JOIN tenmo_user AS u ON u.user_id = a.user_id " +
+                "WHERE u.username = ?;";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
+        if (rowSet.next()){
+            return mapRowToAccount(rowSet);
+        }
+        throw new AccountNotFound();
+    }
+
     private Account mapRowToAccount (SqlRowSet rs) {
         Account account = new Account();
-        account.setAccountId(rs.getInt("account_id"));
         account.setUserId(rs.getInt("user_id"));
+        account.setAccountId(rs.getInt("account_id"));
         account.setBalance(rs.getBigDecimal("balance"));
         return account;
     }
