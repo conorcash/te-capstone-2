@@ -15,8 +15,8 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/accounts")
 public class AccountController {
-    private AccountDao accountDao;
-    private UserDao userDao;
+    private final AccountDao accountDao;
+    private final UserDao userDao;
 
     public AccountController(AccountDao accountDao, UserDao userDao) {
         this.accountDao = accountDao;

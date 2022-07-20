@@ -1,8 +1,8 @@
 package com.techelevator.tenmo.model;
 
-public class Responses {
+public class TransactionDTO {
 
-    public class TransferApproval {
+    public static class TransferApproval {
         private boolean isApproved;
 
         public boolean isApproved() {

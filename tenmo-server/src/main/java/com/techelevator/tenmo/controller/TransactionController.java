@@ -6,9 +6,8 @@ import com.techelevator.tenmo.Exceptions.InvalidAmount;
 import com.techelevator.tenmo.Exceptions.InvalidEntry;
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransactionsDao;
-import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.Responses;
+import com.techelevator.tenmo.model.TransactionDTO;
 import com.techelevator.tenmo.model.Transaction;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,12 +23,10 @@ import java.util.List;
 @RestController
 public class TransactionController {
     private final TransactionsDao transactionsDao;
-    private final UserDao userDao;
     private final AccountDao accountDao;
 
-    public TransactionController (TransactionsDao transactionsDao, UserDao userDao, AccountDao accountDao) {
+    public TransactionController (TransactionsDao transactionsDao, AccountDao accountDao) {
         this.transactionsDao = transactionsDao;
-        this.userDao = userDao;
         this.accountDao = accountDao;
     }
 
@@ -71,10 +68,9 @@ public class TransactionController {
 
     @RequestMapping(path = "/transactions/{id}", method = RequestMethod.GET)
     public Transaction getTransaction(@PathVariable ("id") int transactionId, Principal principal)
-            throws ResponseStatusException, AccountNotFound {
+            throws AccountNotFound {
         int currentUserAccountId = accountDao.findByUsername(principal.getName()).getAccountId();
-        if (transactionsDao.findTransactionById(transactionId).getRecipientId() == currentUserAccountId ||
-                transactionsDao.findTransactionById(transactionId).getSenderId() == currentUserAccountId) {
+        if (accountInTransaction(currentUserAccountId,transactionId)) {
             return transactionsDao.findTransactionById(transactionId);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -105,9 +101,9 @@ public class TransactionController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(value = "/transactions/{id}")
-    public Transaction transactionApproval (@RequestBody Responses.TransferApproval response,
+    public Transaction transactionApproval (@RequestBody TransactionDTO.TransferApproval response,
                                                 @PathVariable ("id") int transactionId, Principal principal)
-            throws InvalidAmount, InsufficientBalance, InvalidEntry, AccountNotFound {
+            throws InvalidAmount, InsufficientBalance, AccountNotFound {
         int currentUserAccountId =
                 accountDao.findByUsername(principal.getName()).getAccountId();
         if (currentUserAccountId == transactionsDao.findTransactionById(transactionId).getSenderId()
@@ -121,7 +117,7 @@ public class TransactionController {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
 
-    public Transaction approve(int transactionId)
+    private Transaction approve(int transactionId)
             throws InsufficientBalance, AccountNotFound, InvalidAmount {
         Transaction transaction = transactionsDao.findTransactionById(transactionId);
             accountDao.deposit(transaction.getAmount(),transaction.getRecipientId());
@@ -129,7 +125,12 @@ public class TransactionController {
             return transactionsDao.accept(transactionId);
     }
 
-    public Transaction reject(int transactionId) {
+    private Transaction reject(int transactionId) {
         return transactionsDao.reject(transactionId);
+    }
+
+    private boolean accountInTransaction(int accountId, int transactionId) {
+        return transactionsDao.findTransactionById(transactionId).getRecipientId() == accountId ||
+                transactionsDao.findTransactionById(transactionId).getSenderId() == accountId;
     }
 }
